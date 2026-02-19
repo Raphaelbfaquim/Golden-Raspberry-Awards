@@ -7,17 +7,41 @@ namespace GoldenRaspberryAwards.Tests.Integration;
 
 public class ProducersControllerIntegrationTests : IClassFixture<WebAppFactory>
 {
-    private readonly HttpClient _client;
+    private readonly WebAppFactory _factory;
 
     public ProducersControllerIntegrationTests(WebAppFactory factory)
     {
-        _client = factory.CreateClient();
+        _factory = factory;
+    }
+
+    private async Task<HttpClient> CreateAuthenticatedClientAsync()
+    {
+        var client = _factory.CreateClient();
+        var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest
+        {
+            UserName = "testuser",
+            Password = "testpass"
+        });
+        loginResponse.EnsureSuccessStatusCode();
+        var loginResult = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
+        Assert.NotNull(loginResult?.Token);
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", loginResult.Token);
+        return client;
+    }
+
+    [Fact]
+    public async Task GetIntervals_WithoutToken_Returns401()
+    {
+        var client = _factory.CreateClient();
+        var response = await client.GetAsync("/api/producers/intervals");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
     public async Task GetIntervals_Returns200_AndMinMaxStructure()
     {
-        var response = await _client.GetAsync("/api/producers/intervals");
+        var client = await CreateAuthenticatedClientAsync();
+        var response = await client.GetAsync("/api/producers/intervals");
         response.EnsureSuccessStatusCode();
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -30,7 +54,8 @@ public class ProducersControllerIntegrationTests : IClassFixture<WebAppFactory>
     [Fact]
     public async Task GetIntervals_ReturnsDataAccordingToMovielistCsv()
     {
-        var response = await _client.GetAsync("/api/producers/intervals");
+        var client = await CreateAuthenticatedClientAsync();
+        var response = await client.GetAsync("/api/producers/intervals");
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<ProducerIntervalResult>();
         Assert.NotNull(result);

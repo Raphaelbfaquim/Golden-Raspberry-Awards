@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using GoldenRaspberryAwards.Api.Models;
 using GoldenRaspberryAwards.Api.Services;
 
@@ -6,6 +8,8 @@ namespace GoldenRaspberryAwards.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
+[EnableRateLimiting("fixed")]
 public class ProducersController : ControllerBase
 {
     private readonly IProducerIntervalService _intervalService;

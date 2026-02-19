@@ -1,0 +1,89 @@
+{
+	"info": {
+		"_postman_id": "golden-raspberry-awards-api",
+		"name": "Golden Raspberry Awards API",
+		"description": "Collection para a API Golden Raspberry Awards. Execute **Login** primeiro para obter o token; em seguida use **Get Intervals** (ele usa o token automaticamente).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000"
+		},
+		{
+			"key": "token",
+			"value": ""
+		}
+	],
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userName\": \"admin\",\n  \"password\": \"admin\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						},
+						"description": "Autentica com usuário e senha e retorna um token JWT. Use as credenciais configuradas em appsettings (admin/admin por padrão). O token é salvo automaticamente para as outras requisições."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const json = pm.response.json();",
+									"    if (json.token) {",
+									"        pm.collectionVariables.set('token', json.token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Producers",
+			"item": [
+				{
+					"name": "Get Intervals",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/producers/intervals",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "producers", "intervals"]
+						},
+						"description": "Retorna produtores com menor e maior intervalo entre dois prêmios consecutivos (Pior Filme). Requer token JWT (execute Login antes)."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

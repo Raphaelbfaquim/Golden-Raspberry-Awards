@@ -32,5 +32,10 @@ public class WebAppFactory : WebApplicationFactory<Program>
         });
 
         builder.UseSetting("CsvPath", _csvPath);
+        builder.UseSetting("Jwt:Secret", "TestSecretKey-AtLeast32CharactersLong!!");
+        builder.UseSetting("Jwt:Issuer", "GoldenRaspberryAwards.Api.Tests");
+        builder.UseSetting("Jwt:Audience", "GoldenRaspberryAwards.Api.Tests");
+        builder.UseSetting("Auth:UserName", "testuser");
+        builder.UseSetting("Auth:Password", "testpass");
     }
 }
